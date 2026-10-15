@@ -1,0 +1,11 @@
+INCIDENTS = [
+ {"id":"INC-1042","title":"Kueue workloads pending in analytics queue","severity":"High","status":"Open","service":"batch-processing","created":"2026-10-15T08:20:00Z","summary":"120 workloads pending; cohort quota at capacity; 8 running, 3 failed.","metrics":{"pending":120,"running":8,"failed":3,"passed":84},"logs":["08:20 queue analytics-prod pending=120","08:21 cohort quota cpu 96/96 used","08:22 admission check insufficient cpu quota","08:23 worker job-891 failed: OOMKilled"]},
+ {"id":"INC-1043","title":"Increased API latency in ingestion service","severity":"Medium","status":"Open","service":"ingestion-api","created":"2026-10-15T09:12:00Z","summary":"p95 latency increased from 300ms to 2.1s; downstream timeouts.","metrics":{"p95_ms":2100,"errors":18},"logs":["09:12 p95_latency=2100ms","09:13 downstream timeout: catalog service","09:15 retry rate=18%"]},
+ {"id":"INC-1044","title":"Scheduled ETL completed with warnings","severity":"Low","status":"Monitoring","service":"daily-etl","created":"2026-10-15T10:05:00Z","summary":"ETL completed; 14 records rejected by validation.","metrics":{"processed":12340,"rejected":14},"logs":["10:05 pipeline completed status=warning","10:05 schema validation rejected=14"]}
+]
+RUNBOOKS = [
+ {"id":"RB-01","title":"Kueue queue backlog and quota triage","body":"Check LocalQueue and ClusterQueue admission status, cohort resource quota, pending workload counts, and available CPU/memory. Verify resource flavors and priority. For quota increases, obtain platform-owner approval. Never change production quotas automatically."},
+ {"id":"RB-02","title":"OOMKilled worker investigation","body":"Inspect pod termination reasons, memory limits, request sizing, and recent worker logs. Recommend right-sizing or splitting workloads. Any restart or configuration change requires explicit approval."},
+ {"id":"RB-03","title":"API latency incident playbook","body":"Inspect p95 latency, error rates, downstream timeouts, dependency health and retry amplification. Suggest backoff and service-owner escalation. Require approval for any action."},
+ {"id":"RB-04","title":"ETL data-quality warning","body":"Compare rejected records against schema expectations, isolate bad rows, and notify data owners. Do not silently discard rejected records."}
+]

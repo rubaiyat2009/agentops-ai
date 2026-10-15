@@ -1,0 +1,12 @@
+.env
+.env.*
+!.env.example
+node_modules/
+dist/
+.venv/
+__pycache__/
+*.pyc
+.firebase/
+.firebaserc
+service-account*.json
+scripts/env.yaml
