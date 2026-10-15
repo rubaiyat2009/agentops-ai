@@ -5,6 +5,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel,Field
 from .store import store
 from .ai import analyze
+from .diagnostics import diagnose
 
 app=FastAPI(title="AgentOps AI API",version="1.0.0")
 origins=[x.strip() for x in os.getenv('ALLOWED_ORIGINS','http://localhost:5173').split(',') if x.strip()]
@@ -23,6 +24,11 @@ def incident(incident_id:str):
  value=store.get('incidents',incident_id)
  if not value:raise HTTPException(404,'Incident not found')
  return value
+@app.get('/api/incidents/{incident_id}/diagnostics')
+def incident_diagnostics(incident_id:str):
+ item=store.get('incidents',incident_id)
+ if not item:raise HTTPException(404,'Incident not found')
+ return diagnose(item)
 @app.get('/api/runbooks')
 def runbooks():return store.list('runbooks')
 @app.post('/api/incidents/{incident_id}/investigate')
