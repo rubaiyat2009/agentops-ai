@@ -16,7 +16,7 @@ def now():return datetime.now(timezone.utc).isoformat()
 def startup():
  if os.getenv('AUTO_SEED','false').lower()=='true':store.seed()
 @app.get('/api/health')
-def health():return {'ok':True,'mode':'demo-simulated' if store.demo else 'google-cloud'}
+def health():return {'ok':True,'mode':'demo-simulated' if os.getenv('AI_PROVIDER','demo')=='demo' else os.getenv('AI_PROVIDER','demo'),'storage':'memory' if store.demo else 'firestore'}
 @app.get('/api/incidents')
 def incidents():return sorted(store.list('incidents'),key=lambda x:x['id'])
 @app.get('/api/incidents/{incident_id}')

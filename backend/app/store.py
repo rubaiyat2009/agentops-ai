@@ -6,7 +6,9 @@ from .data import INCIDENTS, RUNBOOKS
 class Store:
  def __init__(self):
   self.lock=Lock()
-  self.demo=os.getenv("DEMO_MODE","false").lower()=="true"
+  self.demo=os.getenv("STORAGE_BACKEND", "memory").lower()=="memory"
+  if os.getenv("STORAGE_BACKEND", "memory").lower() not in ("memory", "firestore"):
+   raise ValueError("STORAGE_BACKEND must be memory or firestore")
   self.db=None
   if not self.demo:
    from google.cloud import firestore

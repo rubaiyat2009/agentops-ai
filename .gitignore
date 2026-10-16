@@ -10,3 +10,5 @@ __pycache__/
 .firebaserc
 service-account*.json
 scripts/env.yaml
+backend/.env
+backend/.env.*
