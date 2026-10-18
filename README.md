@@ -1,120 +1,91 @@
 # AgentOps AI
 
-**An AI-powered incident investigation and operations assistant**
-
+**An AI-powered incident investigation and operations assistant**  
 Built by **AgentForge AI** for **AI Builder Cup 2026**  
-Challenge: *Future of Work & Enterprise Productivity*
+Challenge: **Future of Work & Enterprise Productivity**
 
-## Why we built AgentOps AI
+**[Try the live prototype](https://agentops-ai.web.app)** · [Cloud Run API health](https://agentops-ai.web.app/api/health)
 
-When something goes wrong in a distributed system, engineers often need to check several places before they can understand what happened. They look at monitoring dashboards, application logs, workload statuses, infrastructure limits, and internal runbooks.
+## Why we built it
 
-Finding the root cause can take longer than expected, especially when multiple symptoms appear at the same time.
+Investigating an incident in a distributed system can mean jumping between dashboards, logs, workload statuses and runbooks. Even when the evidence is available, connecting the dots takes time.
 
-We built **AgentOps AI** to explore how generative AI can make this investigation process faster and more structured.
+AgentOps AI brings that information together. Engineers can review an incident, ask Gemini to investigate the evidence, and assess suggested next steps before taking action. Our goal is to support faster, more consistent decisions—not to replace engineering judgment.
 
-Instead of replacing engineers or automatically changing infrastructure, AgentOps AI brings incident evidence into one place, uses Gemini to help interpret it, and presents recommended next steps for human review.
+## What you can try
 
-## What it does
+- **Operations dashboard:** Explore three synthetic incidents covering Kubernetes/Kueue scheduling, API latency and ETL validation warnings.
+- **Workload signals:** See pending, running, failed and passed worker counts alongside incident logs.
+- **Gemini investigation:** Generate a probable cause, evidence-backed diagnostic findings and recommendations.
+- **Firestore history:** Save investigation results and simulated action records for review.
+- **Human approval workflow:** Create, review and execute *simulated* remediation actions.
+- **Knowledge center:** Browse runbook information where records are available. The current deployed dataset may not contain runbooks.
 
-AgentOps AI provides a simple workflow for investigating operational incidents:
+For example, incident **INC-1042** shows 120 pending Kueue workloads, a CPU cohort quota at 96/96, and a separate OOMKilled worker. Gemini distinguishes the admission bottleneck from the worker's memory failure and recommends verification and human review before any change.
 
-1. **View incidents:** Explore simulated incidents involving distributed workloads, API performance, and data processing.
-2. **Review evidence:** Examine worker statuses, resource utilization, error information, and other relevant telemetry.
-3. **Investigate with Gemini:** Generate an AI-assisted explanation of the likely problem, supporting evidence, and suggested actions.
-4. **Track investigations:** Store investigation records in Firestore for later review.
-5. **Review remediation:** Approve or reject proposed actions before executing a simulated remediation.
-6. **Maintain an audit trail:** Record the action workflow so decisions can be reviewed.
-
-The prototype includes scenarios inspired by real operational challenges, including Kubernetes workload scheduling, resource quotas, worker failures, and data pipeline issues.
-
-## Technology stack
-
-| Component | Technology |
-|---|---|
-| Frontend | React, Vite |
-| Backend | Python, FastAPI |
-| Generative AI | Google Gemini Developer API |
-| Database | Google Cloud Firestore |
-| Frontend hosting | Firebase Hosting |
-| Backend hosting | Google Cloud Run (planned) |
-| Containerization | Docker |
-
-### How it works
-
-The React frontend communicates with a FastAPI backend that manages incidents, investigation requests, and simulated remediation workflows.
-
-When a user requests an investigation, the backend prepares incident evidence and sends it to Gemini. The resulting explanation and recommendations are returned to the UI, while investigation records can be stored in Firestore.
-
-For remediation, the application follows an approval-based workflow. Actions are simulated and recorded rather than applied to real infrastructure.
-
-## Current project status
-
-The prototype is functional in the local development environment.
-
-- React frontend deployed to Firebase Hosting.
-- FastAPI backend running locally.
-- Gemini Developer API integration tested successfully.
-- Firestore connectivity verified.
-- Sample incidents available in Firestore.
-- Simulated approval and remediation workflow implemented.
-- Docker configuration prepared for Cloud Run deployment.
-
-**Live frontend:** https://agentops-ai.web.app
-
-The public frontend is available, but the backend has not yet been deployed to Cloud Run. As a result, live API-dependent features on the public site are not fully available yet.
-
-We will update this section once the backend deployment and public end-to-end testing are complete.
-
-## Project structure
+## Live architecture
 
 ```text
-AgentOps_AI_Full_Prototype/
-├── backend/
-│   ├── app/
-│   │   ├── main.py          # API routes and workflow
-│   │   ├── ai.py            # Gemini integration
-│   │   ├── store.py         # Firestore and local storage
-│   │   └── data.py          # Sample incidents and runbooks
-│   ├── tests/
-│   ├── Dockerfile
-│   ├── .dockerignore
-│   └── requirements.txt
-├── frontend/
-│   └── src/                 # React application
-├── scripts/                 # Deployment helpers
-├── firebase.json
-└── README.md
+Browser
+   |
+   v
+Firebase Hosting (React / Vite)
+   |  /api/** Hosting rewrite
+   v
+Cloud Run (FastAPI, asia-southeast1)
+   |                         |
+   v                         v
+Cloud Firestore         Gemini Developer API
+(incidents, investigations, simulated actions)
 ```
 
-## Running the application locally
+| Component | Technology | How it is used |
+| --- | --- | --- |
+| Frontend | React + Vite | Dashboard and investigation workflow |
+| Hosting | Firebase Hosting | Serves the web app and forwards `/api/**` to Cloud Run |
+| Backend | Python + FastAPI | Incident APIs, Gemini requests and simulated approvals |
+| Compute | Google Cloud Run | Runs the containerized API in Singapore |
+| Database | Cloud Firestore | Persists incident and investigation records |
+| AI | Google Gemini Developer API | Analyzes synthetic incident evidence and suggests next steps |
+| Secrets | Google Cloud Secret Manager | Supplies the Gemini API key to Cloud Run |
+| Container | Docker | Packages the backend for deployment via Cloud Build |
 
-### 1. Start the backend
+**Live frontend:** https://agentops-ai.web.app  
+**Cloud Run service:** https://agentops-api-751520950948.asia-southeast1.run.app  
+**API health through Hosting:** https://agentops-ai.web.app/api/health  
+**Sample incident API:** https://agentops-ai.web.app/api/incidents
 
-Open PowerShell in the project directory:
+The live deployment has been verified with three incidents, a successful Gemini investigation, and an investigation document persisted to Firestore. All telemetry is synthetic.
+
+## Repository layout
+
+```text
+backend/app/main.py       FastAPI routes and approval workflow
+backend/app/ai.py         Gemini Developer API integration
+backend/app/store.py      Firestore and local demo storage
+backend/app/data.py       Synthetic incident and runbook data
+backend/app/diagnostics.py  Evidence-oriented diagnostics
+backend/tests/            Backend tests
+backend/Dockerfile        Cloud Run container definition
+frontend/src/             React UI
+firebase.json             Firebase Hosting and Cloud Run rewrites
+scripts/                  Deployment helpers
+```
+
+## Run locally
+
+Requires Python 3.11+, Node.js and npm. From the repository root, open PowerShell:
 
 ```powershell
 cd backend
 python -m venv .venv
 .\.venv\Scripts\Activate.ps1
 pip install -r requirements.txt
-```
-
-For a local simulation without cloud credentials:
-
-```powershell
 $env:DEMO_MODE="true"
 python -m uvicorn app.main:app --reload --port 8080
 ```
 
-The backend will be available at:
-
-- API health: http://localhost:8080/api/health
-- API documentation: http://localhost:8080/docs
-
-### 2. Start the frontend
-
-Open another PowerShell terminal:
+In another PowerShell terminal:
 
 ```powershell
 cd frontend
@@ -122,87 +93,57 @@ npm install
 npm run dev
 ```
 
-Open http://localhost:5173 in your browser.
+Open http://localhost:5173. Local demo mode uses synthetic data and deterministic investigation responses; **it does not call Gemini**.
 
-The local simulation uses sample incidents and deterministic investigation results. It does not require a Gemini API key.
-
-### 3. Enable Gemini and Firestore locally
-
-To use the working Gemini Developer API integration and Firestore, configure your credentials before starting the backend:
+To use Gemini and Firestore locally, authenticate with Google Cloud Application Default Credentials and start the backend with:
 
 ```powershell
+$env:DEMO_MODE="false"
 $env:AI_PROVIDER="gemini-api"
 $env:STORAGE_BACKEND="firestore"
-$env:GOOGLE_CLOUD_PROJECT="YOUR_PROJECT_ID"
-$env:GEMINI_API_KEY="YOUR_GEMINI_API_KEY"
-$env:DEMO_MODE="false"
-
+$env:GOOGLE_CLOUD_PROJECT="agentops-ai"
+$env:GEMINI_API_KEY="YOUR_OWN_GEMINI_API_KEY"
+$env:GEMINI_MODELS="gemini-3.5-flash-lite"
 python -m uvicorn app.main:app --reload --port 8080
 ```
 
-You also need valid Google Cloud Application Default Credentials with permission to access the Firestore database.
+Do not commit credentials or API keys. In local development, `frontend/.env` may point to `http://localhost:8080`. For production, set `VITE_API_URL=` in `frontend/.env.production` so requests use the same-origin Firebase Hosting `/api/**` rewrite.
 
-Do not commit API keys, credential files, or local environment settings to GitHub.
+## Cloud deployment
 
-## Google Cloud deployment
+The working deployment uses Google Cloud project `agentops-ai`, region `asia-southeast1`, and Cloud Run service `agentops-api`.
 
-The intended deployment uses Firebase Hosting for the frontend, Cloud Run for the FastAPI backend, and Firestore for persistent records.
-
-### Backend
-
-The backend includes a Dockerfile and can be deployed directly from its source directory using Google Cloud Build.
-
-After enabling billing and the required Google Cloud APIs, configure the Cloud Run runtime service account, Firestore permissions, and Gemini API key securely.
-
-Then deploy using Google Cloud CLI:
+1. Enable billing and the Cloud Run, Cloud Build, Artifact Registry, Firestore, IAM and Secret Manager APIs.
+2. Create a runtime service account and grant it `roles/datastore.user` for Firestore.
+3. Store the Gemini Developer API key in Secret Manager and grant the runtime service account secret access.
+4. Deploy the backend from `backend/`:
 
 ```powershell
-cd backend
+$PROJECT_ID="agentops-ai"
+$REGION="asia-southeast1"
+$SA="agentops-runtime@agentops-ai.iam.gserviceaccount.com"
 
 gcloud run deploy agentops-api `
   --source . `
-  --project YOUR_PROJECT_ID `
-  --region asia-southeast1 `
+  --project $PROJECT_ID `
+  --region $REGION `
+  --service-account $SA `
+  --set-env-vars "AI_PROVIDER=gemini-api,STORAGE_BACKEND=firestore,GOOGLE_CLOUD_PROJECT=$PROJECT_ID,DEMO_MODE=false,GEMINI_MODELS=gemini-3.5-flash-lite" `
+  --set-secrets "GEMINI_API_KEY=agentops-gemini-key:1" `
   --min-instances 0 `
-  --max-instances 1
+  --max-instances 1 `
+  --memory 512Mi
 ```
 
-Before allowing public access, review the API's authentication, authorization, and simulated action endpoints.
+5. Configure `firebase.json` with an `/api/**` rewrite to the Cloud Run service before the SPA `**` rewrite. Build the frontend with a blank `VITE_API_URL`, then run `firebase deploy --only hosting`.
 
-The Gemini API key should be provided securely through Secret Manager rather than committed to the repository.
-
-### Frontend
-
-After the Cloud Run service is available, configure the frontend to use its public API URL, rebuild the React application, and deploy it to Firebase Hosting.
-
-```powershell
-cd frontend
-
-npm install
-npm run build
-
-cd ..
-
-firebase deploy --only hosting
-```
-
-The frontend API configuration and CORS settings must match the deployed Cloud Run URL and Firebase Hosting origin.
+**Public-access caution:** The hackathon deployment currently allows unauthenticated Cloud Run requests. This is appropriate only for a limited synthetic-data demonstration with controlled usage. Before production use, add Firebase Authentication, authorization, rate limits, abuse prevention, monitoring and cost controls. A billing budget alert is not a hard spending cap.
 
 ## Safety and limitations
 
-**AgentOps AI is a hackathon prototype, not a production operations platform.**
+This is a **hackathon prototype**, not a production operations control plane. It does not connect to a live Kubernetes cluster or execute real remediation. All telemetry, logs and incidents are synthetic, and the approval/action workflow is simulated. Gemini responses can be wrong and must be verified against evidence. No production quotas, workloads or external services are changed.
 
-All incidents, telemetry, and operational evidence are synthetic. Remediation actions are simulated and do not modify Kubernetes clusters, resource quotas, cloud services, or production environments.
+## Team and license
 
-Gemini-generated explanations are intended to support investigation, not replace engineering judgment. Recommendations should be checked against the available evidence before decisions are made.
-
-The current prototype does not include the authentication, authorization, abuse protection, and operational controls required for a production deployment.
-
-## Team
-
-**AgentForge AI**  
-AI Builder Cup 2026
-
-## License
-
+**AgentForge AI** · AI Builder Cup 2026  
 MIT — see [LICENSE](LICENSE).
