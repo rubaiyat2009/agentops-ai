@@ -1,3 +1,4 @@
+
 {
   "hosting": {
     "public": "frontend/dist",
@@ -7,6 +8,13 @@
       "**/node_modules/**"
     ],
     "rewrites": [
+      {
+        "source": "/api/**",
+        "run": {
+          "serviceId": "agentops-api",
+          "region": "asia-southeast1"
+        }
+      },
       {
         "source": "**",
         "destination": "/index.html"
